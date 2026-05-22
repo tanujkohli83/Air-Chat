@@ -15,13 +15,18 @@ class GradientButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDisabled = onPressed == null && !isLoading;
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppGradients.indigoViolet,
+        color: isDisabled ? AppColors.border : null,
+        gradient: isDisabled ? null : AppGradients.indigoViolet,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.28),
+            color: isDisabled
+                ? Colors.black.withValues(alpha: 0.05)
+                : AppColors.primary.withValues(alpha: 0.28),
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),
@@ -33,6 +38,10 @@ class GradientButton extends StatelessWidget {
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
           disabledBackgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          disabledForegroundColor: isDisabled
+              ? AppColors.textSecondary
+              : Colors.white,
           minimumSize: const Size.fromHeight(54),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),

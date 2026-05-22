@@ -16,13 +16,21 @@ class ChatRepository {
   Stream<List<ChatConversation>> watchChats(String userId) {
     return _chats
         .where('participantIds', arrayContains: userId)
-        .orderBy('lastMessageAt', descending: true)
         .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
+        .map((snapshot) {
+          final chats = snapshot.docs
               .map((doc) => ChatConversation.fromMap(doc.id, doc.data()))
-              .toList(),
-        );
+              .toList();
+          chats.sort((a, b) {
+            final aTime = a.lastMessageAt;
+            final bTime = b.lastMessageAt;
+            if (aTime == null && bTime == null) return 0;
+            if (aTime == null) return 1;
+            if (bTime == null) return -1;
+            return bTime.compareTo(aTime);
+          });
+          return chats;
+        });
   }
 
   Stream<ChatConversation?> watchChat(String chatId) {

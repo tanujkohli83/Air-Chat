@@ -9,6 +9,7 @@ import 'package:chatapp/features/chat/providers/chat_providers.dart';
 import 'package:chatapp/features/profile_setup/controllers/profile_setup_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
@@ -42,6 +43,20 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       if (image != null) {
         setState(() => _pickedImage = image);
       }
+    } on PlatformException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            error.message ?? 'Could not open your photo library.',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not pick image: $error')),
+      );
     } finally {
       if (mounted) setState(() => _pickingImage = false);
     }

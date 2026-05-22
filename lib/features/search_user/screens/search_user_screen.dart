@@ -31,6 +31,12 @@ class _SearchUserScreenState extends ConsumerState<SearchUserScreen> {
     final currentUserId = ref.watch(currentUserIdProvider);
     final query = _searchController.text.trim();
     final resultsAsync = ref.watch(userSearchProvider(query));
+    final selectedCount = _selectedIds.length;
+    final actionLabel = selectedCount == 0
+        ? 'Select people to chat'
+        : selectedCount == 1
+        ? 'Start direct chat'
+        : 'Create group chat';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -213,19 +219,26 @@ class _SearchUserScreenState extends ConsumerState<SearchUserScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
               child: GradientButton(
-                label: 'Create group chat',
-                onPressed: _selectedIds.length < 2
+                label: actionLabel,
+                onPressed: selectedCount == 0
                     ? null
                     : () async {
                         if (currentUserId == null) return;
                         final navigator = Navigator.of(context);
-                        final chatId = await ref
-                            .read(chatRepositoryProvider)
-                            .createGroupChat(
-                              groupName: _groupNameController.text,
-                              ownerId: currentUserId,
-                              participantIds: _selectedIds.toList(),
-                            );
+                        final repository = ref.read(chatRepositoryProvider);
+                        final chatId = selectedCount == 1
+                            ? await repository.createDirectChat(
+                                currentUserId: currentUserId,
+                                otherUserId: _selectedIds.first,
+                              )
+                            : await repository.createGroupChat(
+                                groupName:
+                                    _groupNameController.text.trim().isEmpty
+                                    ? 'New group'
+                                    : _groupNameController.text,
+                                ownerId: currentUserId,
+                                participantIds: _selectedIds.toList(),
+                              );
                         if (!mounted) return;
                         navigator.pushReplacement(
                           MaterialPageRoute(
